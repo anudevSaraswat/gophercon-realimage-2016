@@ -88,9 +88,8 @@ func main() {
 		fmt.Println()
 
 		fmt.Println("1. Add Distributor")
-		fmt.Println("2. Add New Permission")
-		fmt.Println("3. Check for distribution")
-		fmt.Println("4. Exit")
+		fmt.Println("2. Check for distribution")
+		fmt.Println("3. Exit")
 
 		fmt.Println("")
 
@@ -102,9 +101,8 @@ func main() {
 		case "1":
 			addDistributor()
 		case "2":
-		case "3":
 			checkDistribution()
-		case "4":
+		case "3":
 			os.Exit(1)
 		default:
 			fmt.Println("Invalid choice!")
@@ -142,9 +140,9 @@ func checkDistribution() {
 	}
 
 	if checkIfAuthorized(name, location) {
-		fmt.Println("YES")
+		fmt.Printf("\nYES, %s is authorized to distribute in %s\n\n", name, location)
 	} else {
-		fmt.Println("NO")
+		fmt.Printf("\nNO, %s is not authorized to distribute in %s\n\n", name, location)
 	}
 
 }
