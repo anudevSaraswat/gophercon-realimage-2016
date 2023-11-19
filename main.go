@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"os"
@@ -14,6 +15,7 @@ var (
 	locations    = make(map[string]map[string][]string)
 	stateToCity  = make(map[string][]string)
 	distributors = make(map[string]Distributor)
+	scanner      = bufio.NewScanner(os.Stdin)
 )
 
 type Distributor struct {
@@ -120,7 +122,13 @@ func checkDistribution() {
 
 	for {
 		fmt.Print("Enter Distributor's name: ")
-		fmt.Scanln(&name)
+		if scanner.Scan() {
+			name = scanner.Text()
+		}
+
+		if err := scanner.Err(); err != nil {
+			panic(err)
+		}
 
 		if _, ok := distributors[name]; !ok {
 			fmt.Printf("No distributor exist with name %s\n", name)
@@ -129,7 +137,15 @@ func checkDistribution() {
 
 	HERE:
 		fmt.Print("Enter location: ")
-		fmt.Scan(&location)
+		if scanner.Scan() {
+			location = scanner.Text()
+		}
+
+		if err := scanner.Err(); err != nil {
+			panic(err)
+		}
+
+		location = strings.ToLower(location)
 
 		// validate location entered by user
 		if !IsLocationValid(location) {
@@ -229,17 +245,35 @@ func addDistributor() {
 	)
 
 	fmt.Print("Enter Distributor's name: ")
-	fmt.Scanln(&name)
+	if scanner.Scan() {
+		name = scanner.Text()
+	}
+
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
 
 	fmt.Println("Location should be entered in any hyphen separated combination of CITY STATE OR COUNTRY")
 
 	for {
 
 		fmt.Print("Add Include location: ")
-		fmt.Scanln(&includeLocationStr)
+		if scanner.Scan() {
+			includeLocationStr = scanner.Text()
+		}
+
+		if err := scanner.Err(); err != nil {
+			panic(err)
+		}
 
 		fmt.Print("Add Exclude location: ")
-		fmt.Scanln(&excludeLocationStr)
+		if scanner.Scan() {
+			excludeLocationStr = scanner.Text()
+		}
+
+		if err := scanner.Err(); err != nil {
+			panic(err)
+		}
 
 		includeLocations := parseLocationInput(includeLocationStr)
 		excludeLocations := parseLocationInput(excludeLocationStr)
