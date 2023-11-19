@@ -27,15 +27,6 @@ type Distributor struct {
 	ParentDistributor []Distributor
 }
 
-// possible combinations for location input
-//country
-//state
-//city
-//state-country
-//city-state
-//city-state-country
-//city-country
-
 func loadCsv() {
 
 	file, err := os.Open("cities.csv")
@@ -121,22 +112,6 @@ func main() {
 
 	}
 
-	// // it is a country
-	// if _, ok := locations[locationName]; ok {
-	// 	locations[locationName][locationName]
-	// } else {
-	// 	// it can be a state or a city
-	// 	for _, states := range locations {
-	// 		if _, ok := states[locationName]; ok {
-	// 		} else {
-	// 			// it is a city
-	// 			for _, cities := range states {
-	// 				fmt.Println(cities)
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 }
 
 func checkDistribution() {
@@ -173,22 +148,6 @@ func checkDistribution() {
 	}
 
 }
-
-// INCLUDE-COUNTRY = INDIA
-// INCLUDE-STATE = NULL
-// INCLUDE-CITY = NULL
-
-// EXCLUDE-COUNTRY = NULL
-// EXCLUDE-STATE = MH
-// EXCLUDE-CITY = NULL
-
-// INCLUDE-COUNTRY = NULL
-// INCLUDE-STATE = GJ
-// INCLUDE-CITY = NULL
-
-// EXCLUDE-COUNTRY = NULL
-// EXCLUDE-STATE = NULL
-// EXCLUDE-CITY = AHMEDABAD
 
 func checkIfAuthorized(distributorName, location string) bool {
 
