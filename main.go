@@ -231,7 +231,7 @@ func addDistributor() {
 	fmt.Print("Enter Distributor's name: ")
 	fmt.Scanln(&name)
 
-	fmt.Println("Location should be added in format CITY-STATE-COUNTRY")
+	fmt.Println("Location should be entered in any hyphen separated combination of CITY STATE OR COUNTRY")
 
 	for {
 
