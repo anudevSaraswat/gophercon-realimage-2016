@@ -46,7 +46,7 @@ func loadCsv() {
 	}
 
 	for index, record := range records {
-		if index == 0 || len(record) < 6 {
+		if index == 0 {
 			continue
 		} else {
 			city := strings.ToLower(record[3])
