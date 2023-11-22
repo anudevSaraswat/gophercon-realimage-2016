@@ -21,9 +21,9 @@ var (
 
 type Distributor struct {
 	Name              string
-	IncludeCountry    []string
-	IncludeState      []string
-	IncludeCity       []string
+	IncludeCountry    string
+	IncludeState      string
+	IncludeCity       string
 	ExcludeCountry    []string
 	ExcludeState      []string
 	ExcludeCity       []string
@@ -197,7 +197,8 @@ func checkIfAuthorized(distributorName, location string) bool {
 	if isExcluded {
 		return !isExcluded
 	} else {
-		authorized = Isauthorized(location, distributor.IncludeCity, distributor.IncludeState, distributor.IncludeCountry)
+		authorized = Isauthorized(location, []string{distributor.IncludeCity},
+			[]string{distributor.IncludeState}, []string{distributor.IncludeCountry})
 		if authorized && distributor.ParentDistributor != "" {
 			authorized = checkIfAuthorized(distributor.ParentDistributor, location)
 		}
@@ -269,7 +270,7 @@ func Isauthorized(location string, disCities, disStates, disCountries []string) 
 func addDistributor(subDistributor bool) {
 
 	var (
-		name, includeLocationStr, excludeLocationStr string
+		name, includeLocation, excludeLocationStr string
 	)
 
 	fmt.Print("Enter Distributor's name: ")
@@ -281,13 +282,13 @@ func addDistributor(subDistributor bool) {
 		panic(err)
 	}
 
-	fmt.Println("Location should be entered in any hyphen separated combination of CITY STATE OR COUNTRY")
+	fmt.Println("To enter multiple Exclude Locations, locations can be hyphen separated")
 
 	for {
 
 		fmt.Print("Add Include location: ")
 		if scanner.Scan() {
-			includeLocationStr = scanner.Text()
+			includeLocation = scanner.Text()
 		}
 
 		if err := scanner.Err(); err != nil {
@@ -321,7 +322,7 @@ func addDistributor(subDistributor bool) {
 			}
 		}
 
-		includeLocations, excludeLocations, err := validateLocationInput(includeLocationStr,
+		includeLocationValidated, excludeLocations, err := validateLocationInput(includeLocation,
 			excludeLocationStr, parentDistributorName)
 		if err != nil {
 			fmt.Println(err)
@@ -334,16 +335,14 @@ func addDistributor(subDistributor bool) {
 			Name: name,
 		}
 
-		for _, includeLocation := range includeLocations {
-			if countries[includeLocation] {
-				distributor.IncludeCountry = append(distributor.IncludeCountry, includeLocation)
-			}
-			if states[includeLocation] {
-				distributor.IncludeState = append(distributor.IncludeState, includeLocation)
-			}
-			if cities[includeLocation] {
-				distributor.IncludeCity = append(distributor.IncludeCity, includeLocation)
-			}
+		if countries[includeLocationValidated] {
+			distributor.IncludeCountry = includeLocationValidated
+		}
+		if states[includeLocationValidated] {
+			distributor.IncludeState = includeLocationValidated
+		}
+		if cities[includeLocationValidated] {
+			distributor.IncludeCity = includeLocationValidated
 		}
 
 		for _, excludeLocation := range excludeLocations {
@@ -370,77 +369,64 @@ func addDistributor(subDistributor bool) {
 
 }
 
-func validateLocationInput(includeLocationStr, excludeLocationStr, parentDistributorName string) ([]string, []string, error) {
+func validateLocationInput(includeLocation, excludeLocationStr, parentDistributorName string) (string, []string, error) {
 
 	var (
-		includeLocs, excludeLocs []string
+		excludeLocs []string
 	)
-
-	if includeLocationStr != "" {
-		includeLocs = strings.Split(includeLocationStr, "-")
-	}
 
 	if excludeLocationStr != "" {
 		excludeLocs = strings.Split(excludeLocationStr, "-")
 	}
 
-	if len(includeLocs) > 3 || len(excludeLocs) > 3 {
-		return nil, nil, errors.New("more than 3 locations not allowed")
-	}
-
 	var locs []string
 
-	locs = append(locs, includeLocs...)
+	locs = append(locs, includeLocation)
 	locs = append(locs, excludeLocs...)
 
 	// validate locations entered by user
 	for _, location := range locs {
 		if !IsLocationValid(location) {
-			return nil, nil, errors.New(fmt.Sprintf("Invalid location %s!\n", location))
+			return "", nil, errors.New(fmt.Sprintf("Invalid location %s!\n", location))
 		}
 	}
 
 	// validation for redundancy
 	if checkForSameLocations(locs) {
-		return nil, nil, errors.New("no two locations can be same")
+		return "", nil, errors.New("no two locations can be same")
 	}
 
 	// check if include location of sub distributor comes under all the locations included by parent distributor
 	if parentDistributorName != "" {
 		inCities, inStates, inCountries := getParentLocationsIncluded(parentDistributorName)
 
-		for _, includeLoc := range includeLocs {
-			if !Isauthorized(includeLoc, inCities, inStates, inCountries) {
-				return nil, nil, errors.New("cannot include locations which are not included by parent distributor")
-			}
+		if !Isauthorized(includeLocation, inCities, inStates, inCountries) {
+			return "", nil, errors.New("cannot include locations which are not included by parent distributor")
 		}
 	}
 
 	var includeCities, includeStates, includeCountries []string
 
-	for _, includeLoc := range includeLocs {
-		if cities[includeLoc] {
-			includeCities = append(includeCities, includeLoc)
-		}
-		if states[includeLoc] {
-			includeStates = append(includeStates, includeLoc)
-		}
-		if countries[includeLoc] {
-			includeCountries = append(includeCountries, includeLoc)
-		}
+	if cities[includeLocation] {
+		includeCities = append(includeCities, includeLocation)
+	}
+	if states[includeLocation] {
+		includeStates = append(includeStates, includeLocation)
+	}
+	if countries[includeLocation] {
+		includeCountries = append(includeCountries, includeLocation)
 	}
 
 	// check if exclude locations comes under all the locations included by a distributor
 	for _, excludeLoc := range excludeLocs {
 		if !Isauthorized(excludeLoc, includeCities, includeStates, includeCountries) {
-			return nil, nil, errors.New("excluded locations doesn't come under included ones")
+			return "", nil, errors.New("excluded locations doesn't come under included ones")
 		}
 	}
 
-	includeLocs = convertToLowerCase(includeLocs)
 	excludeLocs = convertToLowerCase(excludeLocs)
 
-	return includeLocs, excludeLocs, nil
+	return strings.ToLower(includeLocation), excludeLocs, nil
 
 }
 
@@ -452,9 +438,9 @@ func getParentLocationsIncluded(distributorName string) ([]string, []string, []s
 
 	distributor := distributors[distributorName]
 
-	includeCities = distributor.IncludeCity
-	includeStates = distributor.IncludeState
-	includeCountries = distributor.IncludeCountry
+	includeCities = append(includeCities, distributor.IncludeCity)
+	includeStates = append(includeStates, distributor.IncludeState)
+	includeCountries = append(includeCountries, distributor.IncludeCountry)
 
 	if distributor.ParentDistributor != "" {
 		inCities, inStates, inCountries := getParentLocationsIncluded(distributor.ParentDistributor)
