@@ -127,7 +127,7 @@ func printDistributors() {
 
 	for name, distributor := range distributors {
 		fmt.Printf("DISTRIBUTOR -> %s\n", name)
-		fmt.Printf("\t\tLocations Included -> %v-%v-%v\n", distributor.IncludeCountry,
+		fmt.Printf("\t\tLocations Included -> %s %s %s\n", distributor.IncludeCountry,
 			distributor.IncludeState, distributor.IncludeCity)
 		fmt.Printf("\t\tLocations Excluded -> %v-%v-%v\n", distributor.ExcludeCountry,
 			distributor.ExcludeState, distributor.ExcludeCity)
